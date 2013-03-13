@@ -12,7 +12,10 @@ Usage:
 
     ...where 'my_template' points at some markup to use as a template, and data is an object.
 
-Template:
+Templates:
+----------
+Just some HTML with template elements
+
       <div class="my_template">
          My name is [[name]] and I have [[animals|count]] [[species]][[animals|count|sIfPlural]]:
          <ol>
@@ -38,7 +41,9 @@ Template:
     option (see below).
 
 
-Data:
+Data
+----
+A js object:
      var data = {
          species: 'moose',
          animals: [
@@ -51,7 +56,8 @@ Data:
   - Data can contain arrays of other objects (e.g. 'animals', above.
 
 
-Options are optional:
+Options (all optional):
+-----------------------
   - extraFilters: an object containing functions that you can use as filters. Filters
     should take a single argument and return a string or number.
 
