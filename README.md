@@ -7,6 +7,7 @@ Requires jQuery.
 
 
 Usage:
+------
     $('.my_template').fillInWith(data)  <-- returns a jquery containing the filled-in template
 
     ...where 'my_template' points at some markup to use as a template, and data is an object.
