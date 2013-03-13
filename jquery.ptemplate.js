@@ -14,10 +14,15 @@
  *                       [[name]] who weighs [[weight]] pound[[weight|sIfPlural]]
  *                   </li>
  *               </ol>
+ *               <span data-if="animals.length>3">
+ *                   I have too many animals
+ *                   <span data-else="true"> I don't have too many animals</span>
+ *               </span>
  *            </div>
  *
  *      Fields go in double-brackets: [[fieldname]] (no spaces!).
  *      Repeating elements are marked with data-repeat-on attribute, which should match the name of an array in your data.
+ *      Conditionals are marked with data-if and data-else. Use conditionals ONLY with trusted data as they require eval().
  *      Supported filters: count, sIfPlural, plus any you want to add in extraFilters option (see below).
  *
  *
@@ -45,15 +50,20 @@
  *
  *      debug: if true, then some errors will be reported in the console
  *
+ *      untrusted: If true, then 'if' conditions won't be evaluated (can't evaluate without eval()). Set if you may
+ *          be using untrustworthy (e.g. user-supplied) data in your templates.
+ *
  */
 $.fn.fillInWith = function(data, options){
-    // turn debug on if selected in options
-    var debug =  options.debug && typeof console == 'object' && function(msg){console.log('pTemplate error: ' + msg)};
+    var options = options || {};
+    var debug = function(){};
+    if (options.debug && typeof console == 'object'){
+        var debug =  function(msg){console.log('pTemplate error: ' + msg)};
+    }
     if (typeof data != 'object' || $.isArray(data)){
         debug('Data passed to fillInWith() must be an object and not an array')
         return $(this)
     }
-    var options = options || {};
     var $template = $(this).clone(); // don't overwrite the original template
     var ldelim = options.ldelim || '[[';
     var rdelim = options.rdelim ||']]';
@@ -110,7 +120,28 @@ $.fn.fillInWith = function(data, options){
             }
         }
 
-        // Part Two: do the actual substitutions
+        // Part Two: deal with conditionals
+        // This uses 'with()', which can lead to confusion if you reference a
+        // variable name that's not in data but IS in the global scope.
+        // Also it uses eval() and so is turned off if untrusted option set
+        $elem.find('[data-if]').each(function(){
+            if (options.untrusted){
+                debug('Untrusted option set; "data-if" conditional will not be evaluated')
+            } else {
+                var $else = $(this).find('[data-else]');
+                var keep;
+                with(data){
+                    keep = eval($(this).attr('data-if'));
+                }
+                if (keep){
+                    $else.remove()
+                } else {
+                    $(this).replaceWith($else);
+                }
+            }
+        });
+
+        // Part Three: do the actual substitutions
         var elemHtml = $elem.html();
         var segments = elemHtml.split(ldelim);
 
@@ -189,6 +220,10 @@ $.fn.fillInWith = function(data, options){
             [[name]] who weighs [[weight]] pound[[weight|sIfPlural]]
         </li>
     </ul>
+    <span data-if="animals.length>3" style="color:red">
+        I have too many animals
+        <span data-else="true" style="color:green"> I don't have too many animals</span>
+    </span>
 </div>
 
 </body>
