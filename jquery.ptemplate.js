@@ -4,61 +4,7 @@
  *  Usage:
  *      $('.my_template').fillInWith(data)  <-- returns a jquery containing the filled-in template
  *
- *      ...where 'my_template' points at some markup to use as a template, and data is an object.
- *
- *      Example Template:
- *            <div class="my_template">
- *               My name is [[name]] and I have [[animals|count]] [[species]][[animals|count|sIfPlural]]:
- *               <ol>
- *                   <li data-repeat-on="animals">
- *                       [[name]] who weighs [[weight]] pound[[weight|sIfPlural]]
- *                   </li>
- *               </ol>
- *               <span data-if="animals.length>3">
- *                   I have too many animals
- *                   <span data-else="true"> I don't have too many animals</span>
- *               </span>
- *            </div>
- *
- *      - Fields go in double-brackets: [[fieldname]] (no spaces!).
- *
- *      - Repeating elements are marked with data-repeat-on attribute, which should match the name of an
- *        array in your data.
- *
- *      - Conditionals are marked with data-if and data-else. Use conditionals ONLY with trusted data as
- *        they use javascript eval() (there's an option to indicate untrusted data, below).
- *
- *      - Filters are marked with '|'. Built-in: count and sIfPlural. You can add more in extraFilters
- *        option (see below).
- *
- *
- *      Example Data:
- *           var data = {
- *               species: 'moose',
- *               animals: [
- *                   {weight:300, name:'Bill'},
- *                   {weight:100, name:'Sam'},
- *                   {weight:120, name:'Heidi'}
- *               ],
- *               'name':'Buddy'};
- *
- *      - Data can contain arrays of other objects (e.g. 'animals', above.
- *
- *
- *  Options are optional:
- *      extraFilters: an object containing functions that you can use as filters. Filters
- *      should take a single argument and return a string or number.
- *
- *      ldelim, rdelim: delimiters for fields; default to '[[' and ']]'
- *
- *      debug: if true, then some errors will be reported in the console
- *
- *      untrusted: If true, then 'if' conditions won't be evaluated (can't evaluate without eval()). Set if you may
- *      be using untrustworthy (e.g. user-supplied) data in your templates.
- *
- *      inPlace: If true, then the template will be modified in place. The default is to return a copy and
- *      leave the original template untouched.
- *
+ *  See readme for more
  */
 $.fn.fillInWith = function(data, options){
     var options = options || {};
@@ -78,6 +24,12 @@ $.fn.fillInWith = function(data, options){
         debug('Cannot find ' + fieldName + ' in data');
         return '';
     };
+    var safeText = options.safeText || function(fieldData){
+        if (typeof fieldData == 'string'){
+            fieldData = fieldData.replace('<', '&lt;');
+        }
+        return fieldData;
+    }
 
     if (options.inPlace){
         var $template = $(this);         // overwrite the original template
@@ -97,6 +49,7 @@ $.fn.fillInWith = function(data, options){
         count: function(value){
             return value && (value.length || 0);
         }
+        // also 'safe', which is not really a filter but turns off the safeText clean up for that field.
     };
     $.extend(filters, options.extraFilters || {});
 
@@ -155,7 +108,7 @@ $.fn.fillInWith = function(data, options){
             }
         });
 
-        // Part Three: do the actual substitutions
+        // Part Three: do the actual field substitutions
         var elemHtml = $elem.html();
         var segments = elemHtml.split(ldelim);
 
@@ -173,20 +126,28 @@ $.fn.fillInWith = function(data, options){
             var field_and_filters = tag_and_text[0].split('|');
             if (field_and_filters.length > 1){
                 var theField = field_and_filters.shift();
+                var safe = false;
                 replacement = data[theField] || badField(theField);
                 // go through the filters from left to right
                 for (var j=0; j<field_and_filters.length; j++){
-                    if  (typeof filters[field_and_filters[j]] == 'function' ){
+                    var filterName = field_and_filters[j];
+                    if  (typeof filters[filterName] == 'function' ){
                         // apply the filter
-                        var filter = filters[field_and_filters[j]];
+                        var filter = filters[filterName];
                         replacement = filter(replacement);
+                    } else if (filterName == 'safe'){
+                        safe = true;
                     } else {
-                        debug(field_and_filters[j] + ' is not a valid filter');
+                        debug(filterName + ' is not a valid filter');
                     }
+                }
+                if (!safe){
+                    replacement = safeText(replacement);
                 }
             } else {
                 var theField = field_and_filters[0];
                 replacement = data[theField] || badField(theField);
+                replacement = safeText(replacement);
             }
             segments[i] = [replacement, tag_and_text[1] || ''].join('');
         }
