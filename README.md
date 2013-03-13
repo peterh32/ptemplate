@@ -14,9 +14,9 @@ Usage:
 
 Templates:
 ----------
-Just some HTML with template elements
+Just some HTML with template elements. Typically a hidden div on your page.
 
-      <div class="my_template">
+      <div class="my_template" style="display:none">
          My name is [[name]] and I have [[animals|count]] [[species]][[animals|count|sIfPlural]]:
          <ol>
              <li data-repeat-on="animals">
@@ -44,6 +44,7 @@ Just some HTML with template elements
 Data
 ----
 A js object:
+
      var data = {
          species: 'moose',
          animals: [
