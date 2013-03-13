@@ -2,13 +2,13 @@
  *  pTemplate javascript templating
  *
  *  Usage (see also example html page at the bottom of this file)
- *      Load script:
- *      <script src="[...]/jquery.ptemplate.js"></script>
- *      (requires jquery)
+ *      $('.my_template').fillInWith(data)  <-- returns a jquery containing the filled-in template
  *
- *      Create an html file containing markup to use as a template. Here's an example:
+ *      ...where 'my_template' points at some markup to use as a template, and data is an object.
+ *
+ *      Example Template:
  *            <div class="my_template">
- *               My name is [[name]] and I have [[animals|count]] [[animal]][[animals|count|sIfPlural]]:
+ *               My name is [[name]] and I have [[animals|count]] [[species]][[animals|count|sIfPlural]]:
  *               <ol>
  *                   <li data-repeat-on="animals">
  *                       [[name]] who weighs [[weight]] pound[[weight|sIfPlural]]
@@ -20,15 +20,21 @@
  *               </span>
  *            </div>
  *
- *      Fields go in double-brackets: [[fieldname]] (no spaces!).
- *      Repeating elements are marked with data-repeat-on attribute, which should match the name of an array in your data.
- *      Conditionals are marked with data-if and data-else. Use conditionals ONLY with trusted data as they require eval().
- *      Supported filters: count, sIfPlural, plus any you want to add in extraFilters option (see below).
+ *      - Fields go in double-brackets: [[fieldname]] (no spaces!).
+ *
+ *      - Repeating elements are marked with data-repeat-on attribute, which should match the name of an
+ *        array in your data.
+ *
+ *      - Conditionals are marked with data-if and data-else. Use conditionals ONLY with trusted data as
+ *        they use javascript eval() (there's an option to indicate untrusted data, below).
+ *
+ *      - Filters are marked with '|'. Built-in: count and sIfPlural. You can add more in extraFilters
+ *        option (see below).
  *
  *
- *      Create some data:
+ *      Example Data:
  *           var data = {
- *               animal: 'moose',
+ *               species: 'moose',
  *               animals: [
  *                   {weight:300, name:'Bill'},
  *                   {weight:100, name:'Sam'},
@@ -36,41 +42,49 @@
  *               ],
  *               'name':'Buddy'};
  *
- *      Data needs to be an object. It can contain arrays of other objects.
- *
- *      Then use the data to fill in the template:
- *          $('.my_template').fillInWith(data) <-- returns a jQuery with the filled-in template
+ *      - Data can contain arrays of other objects (e.g. 'animals', above.
  *
  *
  *  Options are optional:
- *      extraFilters: an object containing functions that you can use as filters. These filters
- *          should take a single argument and return a string or number.
+ *      extraFilters: an object containing functions that you can use as filters. Filters
+ *      should take a single argument and return a string or number.
  *
  *      ldelim, rdelim: delimiters for fields; default to '[[' and ']]'
  *
  *      debug: if true, then some errors will be reported in the console
  *
  *      untrusted: If true, then 'if' conditions won't be evaluated (can't evaluate without eval()). Set if you may
- *          be using untrustworthy (e.g. user-supplied) data in your templates.
+ *      be using untrustworthy (e.g. user-supplied) data in your templates.
+ *
+ *      inPlace: If true, then the template will be modified in place. The default is to return a copy and
+ *      leave the original template untouched.
  *
  */
 $.fn.fillInWith = function(data, options){
     var options = options || {};
+    // set up debug
     var debug = function(){};
     if (options.debug && typeof console == 'object'){
         var debug =  function(msg){console.log('pTemplate error: ' + msg)};
     }
+    // check data
     if (typeof data != 'object' || $.isArray(data)){
         debug('Data passed to fillInWith() must be an object and not an array')
         return $(this)
     }
-    var $template = $(this).clone(); // don't overwrite the original template
     var ldelim = options.ldelim || '[[';
     var rdelim = options.rdelim ||']]';
     var badField = function(fieldName){
         debug('Cannot find ' + fieldName + ' in data');
         return '';
     };
+
+    if (options.inPlace){
+        var $template = $(this);         // overwrite the original template
+    } else {
+        var $template = $(this).clone(); // don't overwrite the original template
+    }
+
 
     // some starter filters
     var filters = {
@@ -192,7 +206,7 @@ $.fn.fillInWith = function(data, options){
     <script src="jquery.ptemplate.js"></script>
     <script>
         var data = {
-            animal: 'moose',
+            species: 'moose',
             animals: [
                 {weight:300, name:'Bill'},
                 {weight:100, name:'Sam'},
@@ -214,7 +228,7 @@ $.fn.fillInWith = function(data, options){
 </head>
 <body>
 <div class="my_template" style="display:none">
-    My name is [[name]] and I have [[animals|count]] [[animal]][[animals|count|sIfPlural]]:
+    My name is [[name]] and I have [[animals|count]] [[species]][[animals|count|sIfPlural]]:
     <ul>
         <li data-repeat-on="animals">
             [[name]] who weighs [[weight]] pound[[weight|sIfPlural]]
