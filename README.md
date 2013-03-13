@@ -31,14 +31,15 @@ Just some HTML with template elements. Typically a hidden div on your page.
 
   - Fields go in double-brackets: \[\[fieldname\]\] (no spaces!).
   
+  - Filters are marked with '|'. Built-in filters are count() and sIfPlural(). You can add more 
+    with the extraFilters option (see below).
+
   - Repeating elements are marked with data-repeat-on attribute, which should match the name of an
     array in your data.
   
   - Conditionals are marked with data-if and data-else. Use conditionals ONLY with trusted data as
     they use javascript eval() (there's an option to indicate untrusted data, below).
-  
-  - Filters are marked with '|'. Built-in: count and sIfPlural. You can add more in extraFilters
-    option (see below).
+
 
 
 Data
