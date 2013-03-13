@@ -1,8 +1,9 @@
 ptemplate
 =========
 
-JQuery plugin for Javascript templating. 
+JQuery plugin for Javascript templating. 2.6k minified. 
 Supports fields, filters, conditionals, and loops.
+Uses plain HTML templates.
 Requires jQuery.
 
 
