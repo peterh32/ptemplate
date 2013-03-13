@@ -1,7 +1,7 @@
 /**
  *  pTemplate javascript templating
  *
- *  Usage (see also example html page at the bottom of this file)
+ *  Usage:
  *      $('.my_template').fillInWith(data)  <-- returns a jquery containing the filled-in template
  *
  *      ...where 'my_template' points at some markup to use as a template, and data is an object.
@@ -65,12 +65,12 @@ $.fn.fillInWith = function(data, options){
     // set up debug
     var debug = function(){};
     if (options.debug && typeof console == 'object'){
-        var debug =  function(msg){console.log('pTemplate error: ' + msg)};
+        debug =  function(msg){console.log('pTemplate error: ' + msg)};
     }
     // check data
     if (typeof data != 'object' || $.isArray(data)){
-        debug('Data passed to fillInWith() must be an object and not an array')
-        return $(this)
+        debug('Data passed to fillInWith() must be an object and not an array');
+        return $(this);
     }
     var ldelim = options.ldelim || '[[';
     var rdelim = options.rdelim ||']]';
@@ -105,7 +105,7 @@ $.fn.fillInWith = function(data, options){
         // data needs to be an object not an array
         if (typeof data != 'object' || $.isArray(data)){
             debug('Data structure problem: ' + typeof data + ' passed to main');
-            return $elem
+            return $elem;
         }
 
         // Part One: recursion for arrays
@@ -121,7 +121,7 @@ $.fn.fillInWith = function(data, options){
                         if (typeof theArray[i] == 'object'){
                             var $template = $replace.clone().removeAttr('data-repeat-on');
                             var $result = main($template, theArray[i]);
-                            $target.append($result)
+                            $target.append($result);
                         } else {
                             debug('Data structure problem. ' + item + '[' + i + '] is a ' + typeof theArray[i] + ' not an object');
                         }
@@ -140,7 +140,7 @@ $.fn.fillInWith = function(data, options){
         // Also it uses eval() and so is turned off if untrusted option set
         $elem.find('[data-if]').each(function(){
             if (options.untrusted){
-                debug('Untrusted option set; "data-if" conditional will not be evaluated')
+                debug('Untrusted option set; "data-if" conditional will not be evaluated');
             } else {
                 var $else = $(this).find('[data-else]');
                 var keep;
@@ -148,7 +148,7 @@ $.fn.fillInWith = function(data, options){
                     keep = eval($(this).attr('data-if'));
                 }
                 if (keep){
-                    $else.remove()
+                    $else.remove();
                 } else {
                     $(this).replaceWith($else);
                 }
@@ -160,7 +160,7 @@ $.fn.fillInWith = function(data, options){
         var segments = elemHtml.split(ldelim);
 
         // pull off the first segment if it does not contain a field
-        var segmentZero = ''
+        var segmentZero = '';
         if (segments[0].indexOf(rdelim) == -1){
             segmentZero = segments.shift();
         }
@@ -181,66 +181,18 @@ $.fn.fillInWith = function(data, options){
                         var filter = filters[field_and_filters[j]];
                         replacement = filter(replacement);
                     } else {
-                        debug(field_and_filters[j] + ' is not a valid filter')
+                        debug(field_and_filters[j] + ' is not a valid filter');
                     }
                 }
             } else {
-                var theField = field_and_filters[0]
+                var theField = field_and_filters[0];
                 replacement = data[theField] || badField(theField);
             }
             segments[i] = [replacement, tag_and_text[1] || ''].join('');
         }
-        segments.unshift(segmentZero)
+        segments.unshift(segmentZero);
         elemHtml = segments.join('');
         return $elem.html(elemHtml); // swap in the new html and return
-    }
-    return main($template, data)
-}
-
-/***    Sample HTML file
-
-<html>
-<head>
-    <title>pTemplate Test Page</title>
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-    <script src="jquery.ptemplate.js"></script>
-    <script>
-        var data = {
-            species: 'moose',
-            animals: [
-                {weight:300, name:'Bill'},
-                {weight:100, name:'Sam'},
-                {weight:120, name:'Heidi'}
-            ],
-            'name':'Pedro'
-        };
-
-        $(function(){
-            // load the template and fill in the data
-            var results = $('.my_template').fillInWith(data);
-            // nuke the template class
-            results.removeClass('my_template');
-            // make it visible
-            $('body').append(results);
-            results.show();
-        });
-    </script>
-</head>
-<body>
-<div class="my_template" style="display:none">
-    My name is [[name]] and I have [[animals|count]] [[species]][[animals|count|sIfPlural]]:
-    <ul>
-        <li data-repeat-on="animals">
-            [[name]] who weighs [[weight]] pound[[weight|sIfPlural]]
-        </li>
-    </ul>
-    <span data-if="animals.length>3" style="color:red">
-        I have too many animals
-        <span data-else="true" style="color:green"> I don't have too many animals</span>
-    </span>
-</div>
-
-</body>
-</html>
-
- **/
+    };
+    return main($template, data);
+};
