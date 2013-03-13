@@ -29,7 +29,7 @@ Just some HTML with template elements. Typically a hidden div on your page.
          </span>
       </div>
 
-  - Fields go in double-brackets: [[fieldname]] (no spaces!).
+  - Fields go in double-brackets: \[\[fieldname\]\] (no spaces!).
   
   - Repeating elements are marked with data-repeat-on attribute, which should match the name of an
     array in your data.
