@@ -19,11 +19,11 @@ Just some HTML with template elements. Typically a hidden div on your page.
 
       <div class="my_template" style="display:none">
          My name is [[name]] and I have [[animals|count]] [[species]][[animals|count|sIfPlural]]:
-         <ol>
-             <li data-repeat-on="animals">
-                 [[name]] who weighs [[weight]] pound[[weight|sIfPlural]]
-             </li>
-         </ol>
+         <div data-repeat-on="animals">
+             <span data-if="loop_last"> and </span>
+             [[name]] who weighs [[weight]] pound[[weight|sIfPlural]]
+             <span data-if="loop_notlast">,</span>
+         </div>
          <span data-if="animals.length>3">
              I have too many animals
              <span data-else="true"> I don't have too many animals</span>
@@ -40,6 +40,8 @@ Just some HTML with template elements. Typically a hidden div on your page.
   
   - Conditionals are marked with data-if and data-else. Use conditionals ONLY with trusted data as
     they use javascript eval() (there's an option to indicate untrusted data, below).
+  
+  - Supports loop variables loop_first, loop_last, loop_notlast, loop_notfirst, loop_multiple
 
 
 
