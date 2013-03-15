@@ -1,27 +1,26 @@
-<!DOCTYPE html>
+
 <html>
 <head>
     <title>pTemplate Test Page</title>
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <!--script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script-->
+    <script src="jquery-1.8.2.min.js"></script>
     <script src="jquery.ptemplate.js"></script>
     <script>
         var data = {
             species: 'moose',
             animals: [
-                {weight:300, name:'Bill'},
-                {weight:100, name:'Sam'},
+                {weight:300, name:'<Bill>', friends: ['Ann','Bob','Heloise']},
+                {weight:100, name:'Sam', friends: ['Ann','Bob']},
                 {weight:120, name:'Heidi'}
             ],
-            'name':'Pedro'
+            'name':'<b>Pedro</b>'
         };
 
         $(function(){
             // load the template and fill in the data
-            var results = $('.my_template').fillInWith(data, {debug:true});
-            
+            var results = $('.my_template').fillInWith(data, {debug:true, trusted:true});
             // nuke the template class
             results.removeClass('my_template');
-
             // make it visible
             $('body').append(results);
             results.show();
@@ -30,13 +29,21 @@
 </head>
 <body>
 <div class="my_template" style="display:none">
-    My name is [[name]] and I have [[animals|count]] [[species]][[animals|count|sIfPlural]]:
+    My name is [[name|safe]] and I have [[animals|count]] [[species]][[animals|count|sIfPlural]]:
     <ul>
         <li data-repeat-on="animals">
             [[name]] who weighs [[weight]] pound[[weight|sIfPlural]]
+            <div data-if="friends">
+                Its friend[[friends|count|sIfPlural]]:
+                <span data-repeat-on="friends">
+                    <span data-if="loop_last && loop_multiple">and </span>
+                    [[this]]<span data-if="loop_notlast">, </span>
+                </span>
+                <div data-else>It has no friends</div>
+            </div>
         </li>
     </ul>
-    <span data-if="animals.length>3" style="color:red">
+    <span data-if="animals.length>2" style="color:red">
         I have too many animals
         <span data-else style="color:green"> I don't have too many animals</span>
     </span>
